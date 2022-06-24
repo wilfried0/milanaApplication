@@ -12,9 +12,11 @@ public interface CompressionAction {
 
     public String isolateUniques(String string76);
 
-    public ArrayList<Integer> isolateDuplicatePositions(String string76);
+    public String isolateDuplicatePositions(String string76);
 
-    public ArrayList<String> existPositions(String string76);
+    public String computeOccurrences(String string76);
 
-    public String computeOccurrence(ArrayList<String> positions, int value);
+    public int computeIF(String string76);
+
+    public String get74(char firstBit, String unique, String doublon, String occurrence, int IF);
 }
