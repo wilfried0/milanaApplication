@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Stack;
 
 public class Compression implements CompressionAction {
 
@@ -27,6 +29,7 @@ public class Compression implements CompressionAction {
         for(byte b : bytes){
             binaryData.append(byteToBinaryString(b));
         }
+        System.out.print("\n"+ binaryData.toString()+"\n");
         return binaryData.toString();
     }
 
@@ -44,7 +47,6 @@ public class Compression implements CompressionAction {
         }
         if(!tmp.equals(""))
             resteBits = tmp;
-        System.out.print("\n"+ list76.toString()+"\n");
         return list76;
     }
 
@@ -89,13 +91,17 @@ public class Compression implements CompressionAction {
     public String computeOccurrences(String string76){
         ArrayList<Integer> positions = getExistPosition(string76);
         StringBuilder result = new StringBuilder();
-        for(int i=0; i<9; i++){
-            int finalI = i;
+        for(int i=0; i<=9; i++){
+            Integer finalI = i;
             if(i >= 1 && i<8){
-                result.append(convertToBinaryString(positions.stream().filter(p -> String.valueOf(p).contains(String.valueOf(finalI))).reduce(0, (a, b) -> a+b),4));
-            }else
-                result.append(convertToBinaryString(positions.stream().filter(p -> String.valueOf(p).contains(String.valueOf(finalI))).reduce(0, (a, b) -> a+b),3));
+                System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4)+", ");
+                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4));
+            }else{
+                System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3)+", ");
+                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3));
+            }
         }
+        System.out.println("\nOccurrence bits => "+result.toString());
         return result.toString();
     }
 
@@ -103,11 +109,13 @@ public class Compression implements CompressionAction {
     public int computeIF(String string76) {
         ArrayList<Integer> positions = getExistPosition(string76);
         double IF = 0;
-        for(int i=positions.size()-1; i>=0; i=i-2){
-            if(positions.size()%2==0)
+        if(positions.size()%2==0){
+            for(int i=positions.size()-1; i>=0; i=i-2){
                 IF = IF + getComputeValue(i)/getComputeValue(i-1);
-            else{
-                if(i == 0){
+            }
+        }else{
+            for(int i=positions.size()-1; i>=0; i=i-2){
+                if(i != 0){
                     IF = IF + getComputeValue(i)/getComputeValue(i-1);
                 }else{
                     IF = IF + getComputeValue(i);
@@ -121,11 +129,12 @@ public class Compression implements CompressionAction {
     public String get74(char firstBit, String unique, String doublon, String occurrence, int IF) {
         StringBuilder result = new StringBuilder();
         result.append(firstBit+unique+doublon+occurrence+convertToBinaryString(IF, 25));
+        System.out.println("74 bits: "+result.toString()+"\nLength = "+result.length());
         return result.toString();
     }
 
     //conversion d'un entier en x bits
-    private String convertToBinaryString(int value, int x) {
+    private String convertToBinaryString(long value, int x) {
         StringBuilder result = new StringBuilder();
         for (int i = x-1; i >= 0; i--) {
             int mask = 1 << i;
@@ -153,17 +162,23 @@ public class Compression implements CompressionAction {
         ArrayList<Integer> positions = new ArrayList<>();
         if(string76.charAt(0) == '1')
             positions.add(0);
-        for(int i=7; i<string76.length() && (i!=11 && i!=22 && i!=33 && i!=44 && i!=55 && i!=66 && i!=70); i++){
-            if(string76.charAt(i) == '1')
+        for(int i=7; i<string76.length(); i++){
+            if((i!=11 && i!=22 && i!=33 && i!=44 && i!=55 && i!=66 && i!=70) && string76.charAt(i) == '1')
                 positions.add(i);
         }
+        System.out.println("positions IF => "+positions.toString());
         return positions;
     }
 
     private int getIFValue(double IF) {
         int newIF;
+        System.out.println("IF => "+IF);
         String tempIF = Double.toString(IF).split("\\.")[1];
-        tempIF = tempIF+"0000000";
+        if(tempIF.length() < 8){
+            int len = 8 - tempIF.length();
+            for(int i=0; i<len; i++)
+                tempIF = tempIF+"0";
+        }
         if(Long.parseLong(tempIF) == 0){
             newIF = 0;
         }else if(tempIF.startsWith("0") || Long.parseLong(tempIF) > ref){
@@ -173,11 +188,8 @@ public class Compression implements CompressionAction {
             tempIF = tempIF.substring(0, 9);
             newIF = Integer.parseInt(tempIF);
         }
+        System.out.println("IF final => "+newIF);
         return newIF;
-    }
-
-    private boolean isPositionDuplicate(String string76, int position) {
-        return string76.charAt(position) == '1';
     }
 
     //Valeur de calcul d'une position donnée
@@ -185,7 +197,11 @@ public class Compression implements CompressionAction {
         return position+1+(position+12)/100;
     }
 
-    private int computeOccurrence(ArrayList<Integer> positions, int value) {
-        return positions.stream().filter(p -> String.valueOf(p).contains(String.valueOf(value))).reduce(0, (a, b) -> a+b);
+    public ArrayList<Integer> getPositions(String string76) {
+        ArrayList<Integer> positions = new ArrayList<>();
+        for(int i=0; i<string76.length(); i++)
+            if(string76.charAt(i) == '1')
+                positions.add(i);
+        return positions;
     }
 }

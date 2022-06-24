@@ -8,7 +8,7 @@ import java.util.List;
 public class MilanaApplication {
 
     public static void main(String[] args) {
-        String filePath = "/Users/sprintpay/Documents/test.txt";
+        String filePath = "C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
         milanisation(filePath);
     }
 
@@ -33,11 +33,18 @@ public class MilanaApplication {
         //On parcourt chaque bloc de 76 bits
         for(int i=0; i<list76.size(); i++){
 
+            System.out.println("Rang N° "+i);
+
+            System.out.println("Traitement de: "+list76.get(i));
+            
             //Récupération des uniques de chaque bloc de 76bits
             uniques.add(compression.isolateUniques(list76.get(i)));
 
             //Récupération des doublons de chaque bloc
             duplicates.add(compression.isolateDuplicatePositions(list76.get(i)));
+
+            //Juste pour voir les positions pour vérifier les positions des occurrences
+            System.out.println("positions "+compression.getPositions(list76.get(i)).toString());
 
             //Récupération des occurrences de 0 à 9
             occurrences.add(compression.computeOccurrences(list76.get(i)));
@@ -47,6 +54,8 @@ public class MilanaApplication {
 
             //Récupération en texte de 74 bits
             list74.add(compression.get74(list76.get(i).charAt(0), uniques.get(i), duplicates.get(i), occurrences.get(i), IFs.get(i)));
+
+            System.out.println("==================================================================================================");
         }
         System.out.println("Le reste de bits: "+compression.resteBits);
     }
