@@ -7,7 +7,8 @@ import java.util.ArrayList;
 
 public class Compression implements CompressionAction {
 
-    public static int ref = 33554431;
+    private static int ref = 33554431;
+    public String resteBits;
 
     @Override
     public byte[] fileToByteArray(String filePath) {
@@ -41,13 +42,15 @@ public class Compression implements CompressionAction {
                 tmp = "";
             }
         }
+        if(!tmp.equals(""))
+            resteBits = tmp;
         System.out.print("\n"+ list76.toString()+"\n");
         return list76;
     }
 
     @Override
     public String isolateUniques(String string76) {
-        System.out.println(string76.substring(1,7));
+        System.out.println("Uniques => "+string76.substring(1,7));
         return string76.substring(1, 7);
     }
 
@@ -78,7 +81,7 @@ public class Compression implements CompressionAction {
             result.append('1');
         else
             result.append('0');
-        System.out.println(result.toString());
+        System.out.println("Doublons => "+result.toString());
         return result.toString();
     }
 
@@ -159,7 +162,7 @@ public class Compression implements CompressionAction {
 
     private int getIFValue(double IF) {
         int newIF;
-        String tempIF = Double.toString(IF).split(".")[1];
+        String tempIF = Double.toString(IF).split("\\.")[1];
         tempIF = tempIF+"0000000";
         if(Long.parseLong(tempIF) == 0){
             newIF = 0;

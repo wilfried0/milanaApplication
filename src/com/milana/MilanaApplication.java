@@ -48,5 +48,6 @@ public class MilanaApplication {
             //Récupération en texte de 74 bits
             list74.add(compression.get74(list76.get(i).charAt(0), uniques.get(i), duplicates.get(i), occurrences.get(i), IFs.get(i)));
         }
+        System.out.println("Le reste de bits: "+compression.resteBits);
     }
 }
