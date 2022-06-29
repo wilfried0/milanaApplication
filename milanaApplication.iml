@@ -7,6 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="com.jwebmp.jpms.commons:commons-lang3:0.68.0.1" level="project" />
   </component>
 </module>
-

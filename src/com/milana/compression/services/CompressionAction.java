@@ -18,5 +18,7 @@ public interface CompressionAction {
 
     public int computeIF(String string76);
 
-    public String get74(char firstBit, String unique, String doublon, String occurrence, int IF);
+    public String get74(String unique, String doublon, String occurrence, int IF);
+
+    public void binaryStringToFile(String binaryString, String path);
 }

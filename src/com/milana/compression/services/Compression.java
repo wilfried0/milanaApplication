@@ -1,16 +1,20 @@
 package com.milana.compression.services;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Stack;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Compression implements CompressionAction {
 
     private static int ref = 33554431;
-    public String resteBits;
+    public static int seuil = 30;
+    public static ArrayList<String> resteBits = new ArrayList<>();
 
     @Override
     public byte[] fileToByteArray(String filePath) {
@@ -18,19 +22,25 @@ public class Compression implements CompressionAction {
         try {
             bytes = Files.readAllBytes(Paths.get(filePath));
         } catch (IOException ioe) {
-            System.out.println("Une exception est survenue lors du traitement du fichier!");
+            ioe.printStackTrace();
+            //System.out.println("Une exception est survenue lors du traitement du fichier!");
         }
         return bytes;
     }
 
     @Override
     public String byteArrayToBinaryString(byte[] bytes) {
-        StringBuilder binaryData = new StringBuilder();
-        for(byte b : bytes){
-            binaryData.append(byteToBinaryString(b));
-        }
-        System.out.print("\n"+ binaryData.toString()+"\n");
-        return binaryData.toString();
+        AtomicReference<String> binaryData = new AtomicReference<>("");
+        Byte[] newBytes = ArrayUtils.toObject(bytes);
+        List<Byte> mBytes = Arrays.asList(newBytes);
+        mBytes.stream().parallel().forEach(b -> {
+            binaryData.set(binaryData + byteToBinaryString(b));
+        });
+        /*for(byte b : bytes){
+            binaryData.set(binaryData + byteToBinaryString(b));
+        }*/
+        //System.out.print("\n"+ binaryData.toString()+"\n");
+        return binaryData.get();
     }
 
     @Override
@@ -42,17 +52,22 @@ public class Compression implements CompressionAction {
                 tmp = tmp+binaryString.charAt(i);
             }else{
                 list76.add(tmp);
-                tmp = "";
+                tmp = ""+binaryString.charAt(i);
             }
         }
-        if(!tmp.equals(""))
-            resteBits = tmp;
+        if(!tmp.equals("")){
+            tmp = tmp+convertToBinaryString(tmp.length(), 7);
+        }else{
+            tmp = convertToBinaryString(0, 7);
+        }
+        resteBits.add(tmp);
+        //System.out.println("reste + taille" + resteBits.toString());
         return list76;
     }
 
     @Override
     public String isolateUniques(String string76) {
-        System.out.println("Uniques => "+string76.substring(1,7));
+        //System.out.println("Uniques => "+string76.substring(1,7));
         return string76.substring(1, 7);
     }
 
@@ -83,7 +98,7 @@ public class Compression implements CompressionAction {
             result.append('1');
         else
             result.append('0');
-        System.out.println("Doublons => "+result.toString());
+        //System.out.println("Doublons => "+result.toString());
         return result.toString();
     }
 
@@ -94,31 +109,32 @@ public class Compression implements CompressionAction {
         for(int i=0; i<=9; i++){
             Integer finalI = i;
             if(i >= 1 && i<8){
-                System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4)+", ");
+                //System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4)+", ");
                 result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4));
             }else{
-                System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3)+", ");
+                //System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3)+", ");
                 result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3));
             }
         }
-        System.out.println("\nOccurrence bits => "+result.toString());
+        //System.out.println("\nOccurrence bits => "+result.toString());
         return result.toString();
     }
 
     @Override
     public int computeIF(String string76) {
-        ArrayList<Integer> positions = getExistPosition(string76);
+        ArrayList<Integer> positions = getPositions(string76);
         double IF = 0;
+        //System.out.print("All positions => "+positions.toString()+"\n");
         if(positions.size()%2==0){
             for(int i=positions.size()-1; i>=0; i=i-2){
-                IF = IF + getComputeValue(i)/getComputeValue(i-1);
+                IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
             }
         }else{
             for(int i=positions.size()-1; i>=0; i=i-2){
                 if(i != 0){
-                    IF = IF + getComputeValue(i)/getComputeValue(i-1);
+                    IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
                 }else{
-                    IF = IF + getComputeValue(i);
+                    IF = IF + getComputeValue(positions.get(i));
                 }
             }
         }
@@ -126,10 +142,10 @@ public class Compression implements CompressionAction {
     }
 
     @Override
-    public String get74(char firstBit, String unique, String doublon, String occurrence, int IF) {
+    public String get74(String unique, String doublon, String occurrence, int IF) {
         StringBuilder result = new StringBuilder();
-        result.append(firstBit+unique+doublon+occurrence+convertToBinaryString(IF, 25));
-        System.out.println("74 bits: "+result.toString()+"\nLength = "+result.length());
+        result.append(unique+doublon+occurrence+convertToBinaryString(IF, 25));
+        //System.out.println("74 bits: "+result.toString()+"\nLength = "+result.length());
         return result.toString();
     }
 
@@ -153,8 +169,8 @@ public class Compression implements CompressionAction {
             else
                 binaryData.append('0');
         }
-        System.out.print(b+" = ");
-        System.out.print(binaryData.toString()+" ");
+        //System.out.print(b+" = "+binaryData);
+        //System.out.print(binaryData.toString()+" ");
         return binaryData.toString();
     }
 
@@ -163,16 +179,21 @@ public class Compression implements CompressionAction {
         if(string76.charAt(0) == '1')
             positions.add(0);
         for(int i=7; i<string76.length(); i++){
-            if((i!=11 && i!=22 && i!=33 && i!=44 && i!=55 && i!=66 && i!=70) && string76.charAt(i) == '1')
-                positions.add(i);
+            if((i!=11 && i!=22 && i!=33 && i!=44 && i!=55 && i!=66) && string76.charAt(i) == '1'){
+                if(i<70){
+                    positions.add(i);
+                }else{
+                    positions.add(i+1);
+                }
+            }
         }
-        System.out.println("positions IF => "+positions.toString());
+        //System.out.println("positions IF => "+positions.toString());
         return positions;
     }
 
     private int getIFValue(double IF) {
         int newIF;
-        System.out.println("IF => "+IF);
+        //System.out.println("IF => "+IF);
         String tempIF = Double.toString(IF).split("\\.")[1];
         if(tempIF.length() < 8){
             int len = 8 - tempIF.length();
@@ -181,27 +202,42 @@ public class Compression implements CompressionAction {
         }
         if(Long.parseLong(tempIF) == 0){
             newIF = 0;
-        }else if(tempIF.startsWith("0") || Long.parseLong(tempIF) > ref){
-            tempIF = tempIF.substring(0, 8);
+        }else if(tempIF.startsWith("0") || Integer.parseInt(tempIF.substring(0, 8)) > ref){
+            tempIF = tempIF.substring(0, 7);
             newIF = Integer.parseInt(tempIF);
         }else{
-            tempIF = tempIF.substring(0, 9);
+            tempIF = tempIF.substring(0, 8);
             newIF = Integer.parseInt(tempIF);
         }
-        System.out.println("IF final => "+newIF);
+        //System.out.println("IF final => "+newIF);
         return newIF;
     }
 
     //Valeur de calcul d'une position donnée
     private double getComputeValue(int position){
-        return position+1+(position+12)/100;
+        double res = (double)position+1+((double)position+12)/100;
+        //System.out.print(" "+position+" = "+res+" -- ");
+        return res;
     }
 
     public ArrayList<Integer> getPositions(String string76) {
         ArrayList<Integer> positions = new ArrayList<>();
         for(int i=0; i<string76.length(); i++)
             if(string76.charAt(i) == '1')
-                positions.add(i);
+                if(i<70)
+                    positions.add(i);
+                else
+                    positions.add(i+1);
         return positions;
+    }
+
+    @Override
+    public void binaryStringToFile(String binaryString, String path) {
+        byte[] bytes = binaryString.getBytes();
+        try {
+            Files.write(Paths.get(path), bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

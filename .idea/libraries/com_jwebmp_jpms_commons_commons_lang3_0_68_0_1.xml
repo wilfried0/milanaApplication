@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="com.jwebmp.jpms.commons:commons-lang3:0.68.0.1" type="repository">
+    <properties maven-id="com.jwebmp.jpms.commons:commons-lang3:0.68.0.1" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.m2/repository/com/jwebmp/jpms/commons/commons-lang3/0.68.0.1/commons-lang3-0.68.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.m2/repository/com/jwebmp/jpms/commons/commons-lang3/0.68.0.1/commons-lang3-0.68.0.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.m2/repository/com/jwebmp/jpms/commons/commons-lang3/0.68.0.1/commons-lang3-0.68.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
