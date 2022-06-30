@@ -5,15 +5,18 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+
 public class Compression implements CompressionAction {
 
     private static int ref = 33554431;
     public static int seuil = 30;
+    public static int MAX_VALUE = Integer.MAX_VALUE/4;
     public static ArrayList<String> resteBits = new ArrayList<>();
 
     @Override
@@ -35,6 +38,7 @@ public class Compression implements CompressionAction {
         List<Byte> mBytes = Arrays.asList(newBytes);
         mBytes.stream().parallel().forEach(b -> {
             binaryData.set(binaryData + byteToBinaryString(b));
+            System.out.print(b+"\n");
         });
         /*for(byte b : bytes){
             binaryData.set(binaryData + byteToBinaryString(b));
@@ -44,8 +48,8 @@ public class Compression implements CompressionAction {
     }
 
     @Override
-    public ArrayList<String> binaryStringToList76(String binaryString) {
-        ArrayList<String> list76 = new ArrayList<>();
+    public List<String> binaryStringToList76(String binaryString) {
+        List<String> list76 = new ArrayList<>();
         String tmp = "";
         for(int i=0; i<binaryString.length(); i++){
             if(tmp.length() < 76){
@@ -232,10 +236,10 @@ public class Compression implements CompressionAction {
     }
 
     @Override
-    public void binaryStringToFile(String binaryString, String path) {
+    public void binaryStringToFile(String binaryString, String path, StandardOpenOption option) {
         byte[] bytes = binaryString.getBytes();
         try {
-            Files.write(Paths.get(path), bytes);
+            Files.write(Paths.get(path), bytes, option);
         } catch (Exception e) {
             e.printStackTrace();
         }

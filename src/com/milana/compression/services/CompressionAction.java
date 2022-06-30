@@ -1,6 +1,7 @@
 package com.milana.compression.services;
 
-import java.util.ArrayList;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 public interface CompressionAction {
 
@@ -8,7 +9,7 @@ public interface CompressionAction {
 
     public String byteArrayToBinaryString(byte[] bytes);
 
-    public ArrayList<String> binaryStringToList76(String binaryString);
+    public List<String> binaryStringToList76(String binaryString);
 
     public String isolateUniques(String string76);
 
@@ -20,5 +21,5 @@ public interface CompressionAction {
 
     public String get74(String unique, String doublon, String occurrence, int IF);
 
-    public void binaryStringToFile(String binaryString, String path);
+    public void binaryStringToFile(String binaryString, String path, StandardOpenOption option);
 }
