@@ -1,5 +1,7 @@
 package com.milana.compression.services;
 
+import com.milana.threads.ByteArrayToBinaryStringThread;
+
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 

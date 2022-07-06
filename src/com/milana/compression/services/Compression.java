@@ -1,6 +1,6 @@
 package com.milana.compression.services;
 
-import org.apache.commons.lang3.ArrayUtils;
+import com.milana.threads.ByteArrayToBinaryStringThread;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +9,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class Compression implements CompressionAction {
@@ -17,11 +18,16 @@ public class Compression implements CompressionAction {
     private static int ref = 33554431;
     public static int seuil = 30;
     public static int MAX_VALUE = Integer.MAX_VALUE/4;
+
     public static ArrayList<String> resteBits = new ArrayList<>();
+    long start = System.currentTimeMillis();
+
+    private static byte[] bytes;
+
+    private static final int NB_CPU = Runtime.getRuntime().availableProcessors();
 
     @Override
     public byte[] fileToByteArray(String filePath) {
-        byte[] bytes = {};
         try {
             bytes = Files.readAllBytes(Paths.get(filePath));
         } catch (IOException ioe) {
@@ -33,18 +39,23 @@ public class Compression implements CompressionAction {
 
     @Override
     public String byteArrayToBinaryString(byte[] bytes) {
-        AtomicReference<String> binaryData = new AtomicReference<>("");
-        Byte[] newBytes = ArrayUtils.toObject(bytes);
-        List<Byte> mBytes = Arrays.asList(newBytes);
-        mBytes.stream().parallel().forEach(b -> {
-            binaryData.set(binaryData + byteToBinaryString(b));
-            System.out.print(b+"\n");
+        ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        String[] binaryString = new String[bytes.length];
+        es.execute(() -> {
+            for(int i=0; i<bytes.length; i++){
+                binaryString[i] = byteToBinaryString(bytes[i])+" ";
+                System.out.print("("+i+")"+" "+bytes[i]+" = "+binaryString[i]+"\n");
+            }
         });
-        /*for(byte b : bytes){
-            binaryData.set(binaryData + byteToBinaryString(b));
-        }*/
-        //System.out.print("\n"+ binaryData.toString()+"\n");
-        return binaryData.get();
+        es.shutdown();
+        /*mBytes.parallelStream().forEach(b -> {
+            binaryString[mBytes.indexOf(b)] = byteToBinaryString(b)+" ";
+            System.out.print("("+mBytes.indexOf(b)+")"+" "+b+" = "+byteToBinaryString(b)+"\n");
+        });*/
+        String sortie = Arrays.asList(binaryString).stream().reduce("", (a,b)-> a+b);
+        System.out.println(sortie);
+        System.out.println("----"+(System.currentTimeMillis() - start));
+        return sortie;
     }
 
     @Override
@@ -77,33 +88,8 @@ public class Compression implements CompressionAction {
 
     @Override
     public String isolateDuplicatePositions(String string76) {
-        StringBuilder result = new StringBuilder();
-        if(string76.charAt(11) == '1')
-            result.append('1');
-        else
-            result.append('0');
-        if(string76.charAt(22) == '1')
-            result.append('1');
-        else
-            result.append('0');
-        if(string76.charAt(33) == '1')
-            result.append('1');
-        else
-            result.append('0');
-        if(string76.charAt(44) == '1')
-            result.append('1');
-        else
-            result.append('0');
-        if(string76.charAt(55) == '1')
-            result.append('1');
-        else
-            result.append('0');
-        if(string76.charAt(66) == '1')
-            result.append('1');
-        else
-            result.append('0');
         //System.out.println("Doublons => "+result.toString());
-        return result.toString();
+        return ""+string76.charAt(11)+string76.charAt(22)+string76.charAt(33)+string76.charAt(44)+string76.charAt(55)+string76.charAt(66);
     }
 
     @Override
