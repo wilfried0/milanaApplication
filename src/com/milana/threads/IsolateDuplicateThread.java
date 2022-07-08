@@ -5,7 +5,7 @@ import java.util.List;
 
 public class IsolateDuplicateThread implements Runnable {
     private List<String> listBinaryString76;
-    private List<String> sortie;
+    private static List<String> sortie;
     private int start;
     private int end;
 
@@ -17,7 +17,7 @@ public class IsolateDuplicateThread implements Runnable {
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         for(int i=start; i<=end; i++){
             setDuplicateAtPosition(this.listBinaryString76.get(i), i);
         }
@@ -25,5 +25,9 @@ public class IsolateDuplicateThread implements Runnable {
 
     private void setDuplicateAtPosition(String uniqueString76, int position) {
         sortie.add(position, ""+uniqueString76.charAt(11)+uniqueString76.charAt(22)+uniqueString76.charAt(33)+uniqueString76.charAt(44)+uniqueString76.charAt(55)+uniqueString76.charAt(66));
+    }
+
+    public static String getDuplicateString(){
+        return sortie.stream().reduce("", (a,b)->a+b);
     }
 }

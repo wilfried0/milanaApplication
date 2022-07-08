@@ -22,7 +22,7 @@ public class IsolateList74Thread implements Runnable{
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         for(int i=start; i<=end; i++){
             setString74AtPosition(uniqueString76.get(i),duplicateString76.get(i),occurrenceString76.get(i),iFString76.get(i),i);
         }

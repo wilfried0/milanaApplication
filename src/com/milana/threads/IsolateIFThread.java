@@ -18,7 +18,7 @@ public class IsolateIFThread implements Runnable {
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         for(int i=start; i<=end; i++){
             setIFBinaryStringAtPosition(computeIF(listBinaryString76.get(i)),i);
         }

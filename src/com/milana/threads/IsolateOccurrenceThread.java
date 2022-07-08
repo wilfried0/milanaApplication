@@ -17,7 +17,7 @@ public class IsolateOccurrenceThread implements Runnable{
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         for(int i=start; i<=end; i++){
             setOccurrenceAtPosition(computeOccurrences(this.listBinaryString76.get(i)), i);
         }
