@@ -1,11 +1,9 @@
 package com.milana.threads;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ByteArrayToBinaryStringThread implements Runnable {
 
-    private static AtomicInteger count = new AtomicInteger(0);
     private byte[] bytes;
     private static String[] sortie;
     private int start;
@@ -22,7 +20,6 @@ public class ByteArrayToBinaryStringThread implements Runnable {
     @Override
     public synchronized void run() {
         for(int i=start; i<=end; i++){
-            count.getAndIncrement();
             setBinaryStringAtPosition(byteToBinaryString(this.bytes[i]), i);
         }
     }

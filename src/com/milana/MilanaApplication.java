@@ -1,10 +1,11 @@
 package com.milana;
 
 import com.milana.compression.services.Compression;
-import com.milana.threads.ByteArrayToBinaryStringThread;
+import com.milana.threads.*;
 
 import java.io.File;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class MilanaApplication {
     private static final int NB_CPU = Runtime.getRuntime().availableProcessors();
+    public static final int seuil = 30;
 
     static String path = "/Users/sprintpay/Documents/"; //"C:\\Users\\ASSAM\\Pictures\\";
     static String filePath = "test.txt";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
@@ -21,26 +23,95 @@ public class MilanaApplication {
         byte[] bytes = compression.fileToByteArray(path+filePath);
         Thread[] myThreads = new Thread[bytes.length];
         String[] binaryString = new String[bytes.length];
-        final int GAP = bytes.length/NB_CPU;
+        int niveauCompression = 1;
+        //long time = System.currentTimeMillis();
+        int GAP = bytes.length/NB_CPU;
         int start = 0, end = GAP - 1;
 
+        // Conversion du tableau de bytes en bits (sous forme de chaine de carractères ex: 00110100)
         for(int i=0; i<NB_CPU; i++){
             ByteArrayToBinaryStringThread bTbst = new ByteArrayToBinaryStringThread(bytes, start, end, binaryString);
             myThreads[i] = new Thread(bTbst);
             start = end + 1;
             end += GAP;
         }
-        multiThreadConvertToBinaryStringProcess(myThreads);
-        System.out.println(ByteArrayToBinaryStringThread.getBinaryString());
+        multiThreadProcess(myThreads);
+        String text = ByteArrayToBinaryStringThread.getBinaryString();
+
+        while(niveauCompression < Compression.seuil && text.length() > 74){
+            List<String> list76 = compression.binaryStringToList76(text);
+            GAP = list76.size()/NB_CPU;
+            List<String> uniques = Arrays.asList(new String[list76.size()]);
+            List<String> duplicates = Arrays.asList(new String[list76.size()]);
+            List<String> occurrences = Arrays.asList(new String[list76.size()]);
+            List<String> IFs = Arrays.asList(new String[list76.size()]);
+            List<String> list74 = Arrays.asList(new String[list76.size()]);
+
+            start = 0; end = GAP - 1;
+            myThreads = new Thread[list76.size()];
+            for(int i=0; i<NB_CPU; i++){
+                IsolateUniqueThread iUt = new IsolateUniqueThread(list76, start, end, uniques);
+                myThreads[i] = new Thread(iUt);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(myThreads);
+
+            start = 0; end = GAP - 1;
+            myThreads = new Thread[list76.size()];
+            for(int i=0; i<NB_CPU; i++){
+                IsolateDuplicateThread iDt = new IsolateDuplicateThread(list76, start, end, duplicates);
+                myThreads[i] = new Thread(iDt);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(myThreads);
+
+            start = 0; end = GAP - 1;
+            myThreads = new Thread[list76.size()];
+            for(int i=0; i<NB_CPU; i++){
+                IsolateOccurrenceThread iOt = new IsolateOccurrenceThread(list76, start, end, occurrences);
+                myThreads[i] = new Thread(iOt);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(myThreads);
+
+            start = 0; end = GAP - 1;
+            myThreads = new Thread[list76.size()];
+            for(int i=0; i<NB_CPU; i++){
+                IsolateIFThread iFt = new IsolateIFThread(list76, start, end, IFs);
+                myThreads[i] = new Thread(iFt);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(myThreads);
+
+            start = 0; end = GAP - 1;
+            myThreads = new Thread[list76.size()];
+            for(int i=0; i<NB_CPU; i++){
+                IsolateList74Thread i74t = new IsolateList74Thread(uniques, duplicates, occurrences, IFs, start, end, list74);
+                myThreads[i] = new Thread(i74t);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(myThreads);
+
+            niveauCompression++;
+            text = IsolateList74Thread.getString74();//list74.stream().collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
+            System.out.println("new taille: "+text);
+        }
+        String finalText = text+Compression.resteBits.stream().reduce("", (a,b)->a+b);
+        String savePath = path+filePath+".lana";
+        compression.binaryStringToFile(finalText, savePath, StandardOpenOption.APPEND);
     }
 
-    private static void multiThreadConvertToBinaryStringProcess(Thread[] threads){
+    private static void multiThreadProcess(Thread[] threads){
         for(int i=0; i<NB_CPU; i++){
             threads[i].start();
         }
     }
-
-    public static void milanisation(String filePath){
+    /*public static void milanisation(String filePath){
 
         Compression compression = new Compression();
         int niveauCompression = 1;
@@ -154,5 +225,5 @@ public class MilanaApplication {
             }
         }
         System.out.println("----"+(System.currentTimeMillis() - start));
-    }
+    }*/
 }

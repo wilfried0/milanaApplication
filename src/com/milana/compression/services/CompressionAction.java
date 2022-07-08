@@ -1,9 +1,7 @@
 package com.milana.compression.services;
 
-import com.milana.threads.ByteArrayToBinaryStringThread;
-
 import java.nio.file.StandardOpenOption;
-import java.util.List;
+import java.util.ArrayList;
 
 public interface CompressionAction {
 
@@ -11,7 +9,7 @@ public interface CompressionAction {
 
     public String byteArrayToBinaryString(byte[] bytes);
 
-    public List<String> binaryStringToList76(String binaryString);
+    public ArrayList<String> binaryStringToList76(String binaryString);
 
     public String isolateUniques(String string76);
 

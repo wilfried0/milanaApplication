@@ -1,14 +1,11 @@
 package com.milana.compression.services;
 
-import com.milana.threads.ByteArrayToBinaryStringThread;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,8 +56,8 @@ public class Compression implements CompressionAction {
     }
 
     @Override
-    public List<String> binaryStringToList76(String binaryString) {
-        List<String> list76 = new ArrayList<>();
+    public ArrayList<String> binaryStringToList76(String binaryString) {
+        ArrayList<String> list76 = new ArrayList<>();
         String tmp = "";
         for(int i=0; i<binaryString.length(); i++){
             if(tmp.length() < 76){
