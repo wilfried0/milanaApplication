@@ -1,8 +1,10 @@
 package com.milana.threads;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IsolateList74Thread implements Runnable{
+    public static AtomicInteger count = new AtomicInteger(0);
     private String[] uniqueString76;
     private String[] duplicateString76;
     private String[] occurrenceString76;
@@ -25,7 +27,8 @@ public class IsolateList74Thread implements Runnable{
     public synchronized void run() {
         for(int i=start; i<=end; i++){
             setString74AtPosition(uniqueString76[i],duplicateString76[i],occurrenceString76[i],iFString76[i],i);
-            System.out.println(i+" -> "+sortie[i]);
+            count.getAndIncrement();
+            //System.out.println(i+" -> "+sortie[i]);
         }
     }
 

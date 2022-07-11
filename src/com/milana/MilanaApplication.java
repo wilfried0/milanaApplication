@@ -3,40 +3,41 @@ package com.milana;
 import com.milana.compression.services.Compression;
 import com.milana.threads.*;
 
-import java.io.File;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 public class MilanaApplication {
     private static int NB_CPU = Runtime.getRuntime().availableProcessors();
     public static final int seuil = 30;
 
-    static String path = "C:\\Users\\ASSAM\\Documents\\";
+    static String path = "/Users/sprintpay/Documents/";//"C:\\Users\\ASSAM\\Documents\\";
     static String filePath = "test.txt";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
     public static void main(String[] args) {
 
         Compression compression = new Compression();
         byte[] bytes = compression.fileToByteArray(path+filePath);
-        Thread[] myThreads = new Thread[NB_CPU];
+        Thread[] binaryThreads = new Thread[NB_CPU];
+        Thread[] uniqueThreads = new Thread[NB_CPU];
+        Thread[] duplicateThreads = new Thread[NB_CPU];
+        Thread[] occurrenceThreads = new Thread[NB_CPU];
+        Thread[] IFThreads = new Thread[NB_CPU];
+        Thread[] list74Threads = new Thread[NB_CPU];
         String[] binaryString = new String[bytes.length];
         int niveauCompression = 1;
         //long time = System.currentTimeMillis();
         int GAP = bytes.length/NB_CPU;
         int start = 0, end = GAP+(bytes.length%NB_CPU)-1;
-        System.out.println(bytes.length);
 
         // Conversion du tableau de bytes en bits (sous forme de chaine de carractères ex: 00110100)
         for(int i=0; i<NB_CPU; i++){
             ByteArrayToBinaryStringThread bTbst = new ByteArrayToBinaryStringThread(bytes, start, end, binaryString);
-            myThreads[i] = new Thread(bTbst);
+            binaryThreads[i] = new Thread(bTbst);
             start = end + 1;
             end += GAP;
         }
-        multiThreadProcess(myThreads);
+        multiThreadProcess(binaryThreads);
+        multiThreadProcessJoin(binaryThreads);
 
         String text = ByteArrayToBinaryStringThread.getBinaryString();
         System.out.println(text);
@@ -59,54 +60,54 @@ public class MilanaApplication {
             System.out.println("-------------------  Uniques  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateUniqueThread iUt = new IsolateUniqueThread(list76, start, end, uniques);
-                myThreads[i] = new Thread(iUt);
+                uniqueThreads[i] = new Thread(iUt);
                 start = end + 1;
                 end += GAP;
             }
-            multiThreadProcess(myThreads);
+            multiThreadProcess(uniqueThreads);
             System.out.println(IsolateUniqueThread.getUniqueString());
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  Duplicates  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateDuplicateThread iDt = new IsolateDuplicateThread(list76, start, end, duplicates);
-                myThreads[i] = new Thread(iDt);
+                duplicateThreads[i] = new Thread(iDt);
                 start = end + 1;
                 end += GAP;
             }
-            multiThreadProcess(myThreads);
+            multiThreadProcess(duplicateThreads);
             System.out.println(IsolateDuplicateThread.getDuplicateString());
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  Occurrences  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateOccurrenceThread iOt = new IsolateOccurrenceThread(list76, start, end, occurrences);
-                myThreads[i] = new Thread(iOt);
+                occurrenceThreads[i] = new Thread(iOt);
                 start = end + 1;
                 end += GAP;
             }
-            multiThreadProcess(myThreads);
+            multiThreadProcess(occurrenceThreads);
             System.out.println(IsolateOccurrenceThread.getString());
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  IF  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateIFThread iFt = new IsolateIFThread(list76, start, end, IFs);
-                myThreads[i] = new Thread(iFt);
+                IFThreads[i] = new Thread(iFt);
                 start = end + 1;
                 end += GAP;
             }
-            multiThreadProcess(myThreads);
+            multiThreadProcess(IFThreads);
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  list74  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateList74Thread i74t = new IsolateList74Thread(uniques, duplicates, occurrences, IFs, start, end, list74);
-                myThreads[i] = new Thread(i74t);
+                list74Threads[i] = new Thread(i74t);
                 start = end + 1;
                 end += GAP;
             }
-            multiThreadProcess(myThreads);
+            multiThreadProcess(list74Threads);
 
             niveauCompression++;
             text = IsolateList74Thread.getString74();//list74.stream().collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
@@ -121,6 +122,17 @@ public class MilanaApplication {
         for(int i=0; i<NB_CPU; i++){
             threads[i].start();
         }
+    }
+
+    public static void multiThreadProcessJoin(Thread[] threads)  {
+        try {
+            for(int i=0; i<NB_CPU; i++){
+                threads[i].join();
+            }
+        } catch (InterruptedException ignored){
+
+        }
+
     }
     /*public static void milanisation(String filePath){
 

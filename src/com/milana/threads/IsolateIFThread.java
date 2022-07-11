@@ -2,9 +2,10 @@ package com.milana.threads;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IsolateIFThread implements Runnable {
+    public static AtomicInteger count = new AtomicInteger(0);
     private static final int ref = 33554431;
     private List<String> listBinaryString76;
     private String[] sortie;
@@ -22,7 +23,8 @@ public class IsolateIFThread implements Runnable {
     public synchronized void run() {
         for(int i=start; i<=end; i++){
             setIFBinaryStringAtPosition(computeIF(listBinaryString76.get(i)),i);
-            System.out.println(i+" -> "+sortie[i]);
+            count.getAndIncrement();
+            //System.out.println(i+" -> "+sortie[i]);
         }
     }
 

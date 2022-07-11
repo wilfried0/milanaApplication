@@ -3,9 +3,10 @@ package com.milana.threads;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IsolateOccurrenceThread implements Runnable{
+    public static AtomicInteger count = new AtomicInteger(0);
     private List<String> listBinaryString76;
     private static String[] sortie;
     private int start;
@@ -22,6 +23,7 @@ public class IsolateOccurrenceThread implements Runnable{
     public synchronized void run() {
         for(int i=start; i<=end; i++){
             setOccurrenceAtPosition(computeOccurrences(this.listBinaryString76.get(i)), i);
+            count.getAndIncrement();
         }
     }
 
