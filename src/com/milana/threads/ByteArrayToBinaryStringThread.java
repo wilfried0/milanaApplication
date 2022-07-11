@@ -37,7 +37,7 @@ public class ByteArrayToBinaryStringThread implements Runnable {
     }
 
     private void setBinaryStringAtPosition(String binaryString, int position){
-        sortie[position] = binaryString+" ";
+        sortie[position] = binaryString;
         System.out.println("("+position+") "+" =>"+binaryString);
     }
 

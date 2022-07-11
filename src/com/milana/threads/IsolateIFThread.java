@@ -2,15 +2,16 @@ package com.milana.threads;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class IsolateIFThread implements Runnable {
     private static final int ref = 33554431;
     private List<String> listBinaryString76;
-    private List<String> sortie;
+    private String[] sortie;
     private int start;
     private int end;
 
-    public IsolateIFThread(List<String> listBinaryString76, int start, int end, List<String> s) {
+    public IsolateIFThread(List<String> listBinaryString76, int start, int end, String[] s) {
         this.listBinaryString76 = listBinaryString76;
         this.start = start;
         this.end = end;
@@ -21,11 +22,12 @@ public class IsolateIFThread implements Runnable {
     public synchronized void run() {
         for(int i=start; i<=end; i++){
             setIFBinaryStringAtPosition(computeIF(listBinaryString76.get(i)),i);
+            System.out.println(i+" -> "+sortie[i]);
         }
     }
 
     private void setIFBinaryStringAtPosition(String binaryString76, int position){
-        sortie.add(position, binaryString76);
+        sortie[position] = binaryString76;
     }
 
     private ArrayList<Integer> getPositions(String string76) {
