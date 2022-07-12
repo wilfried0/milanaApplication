@@ -35,8 +35,4 @@ public class IsolateUniqueThread implements Runnable {
     private void setUniqueBinaryStringAtPosition(String binaryString76, int position){
         sortie[position] = binaryString76;
     }
-
-    public static String getUniqueString(){
-        return Arrays.stream(sortie).reduce("", (a, b)->a+b);
-    }
 }

@@ -34,7 +34,6 @@ public class IsolateOccurrenceThread implements Runnable{
     private String computeOccurrences(String string76){
         ArrayList<Integer> positions = getExistPosition(string76);
         StringBuilder result = new StringBuilder();
-        StringBuilder res = new StringBuilder();
         for(int i=0; i<=9; i++){
             int finalI = i;
             if(i >= 1 && i<8){
@@ -42,8 +41,6 @@ public class IsolateOccurrenceThread implements Runnable{
             }else{
                 result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count(),3));
             }
-            //res.append(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count());
-            System.out.println(i+" "+res.append(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count()).toString());
         }
         return result.toString();
     }
@@ -61,7 +58,7 @@ public class IsolateOccurrenceThread implements Runnable{
                 }
             }
         }
-        System.out.println("positions => "+positions.toString());
+        System.out.println(listBinaryString76.indexOf(string76)+" positions => "+positions.toString());
         return positions;
     }
 
@@ -72,9 +69,5 @@ public class IsolateOccurrenceThread implements Runnable{
             result.append((value & mask) != 0 ? "1" : "0");
         }
         return result.toString();
-    }
-
-    public static String getString(){
-        return Arrays.stream(sortie).reduce("", (a, b)->a+b);
     }
 }

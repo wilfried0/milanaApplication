@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,46 +18,36 @@ public class Compression implements CompressionAction {
     public static int MAX_VALUE = Integer.MAX_VALUE/4;
 
     public static ArrayList<String> resteBits = new ArrayList<>();
-    long start = System.currentTimeMillis();
-
-    private static byte[] bytes;
 
     private static final int NB_CPU = Runtime.getRuntime().availableProcessors();
 
     @Override
     public byte[] fileToByteArray(String filePath) {
+        byte[] bytes ={};
         try {
             bytes = Files.readAllBytes(Paths.get(filePath));
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            //System.out.println("Une exception est survenue lors du traitement du fichier!");
         }
         return bytes;
     }
 
     @Override
     public String byteArrayToBinaryString(byte[] bytes) {
-        ExecutorService es = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
         String[] binaryString = new String[bytes.length];
         es.execute(() -> {
             for(int i=0; i<bytes.length; i++){
-                binaryString[i] = byteToBinaryString(bytes[i])+" ";
+                binaryString[i] = byteToBinaryString(bytes[i]);
                 System.out.print("("+i+")"+" "+bytes[i]+" = "+binaryString[i]+"\n");
             }
         });
         es.shutdown();
-        /*mBytes.parallelStream().forEach(b -> {
-            binaryString[mBytes.indexOf(b)] = byteToBinaryString(b)+" ";
-            System.out.print("("+mBytes.indexOf(b)+")"+" "+b+" = "+byteToBinaryString(b)+"\n");
-        });*/
-        String sortie = Arrays.asList(binaryString).stream().reduce("", (a,b)-> a+b);
-        System.out.println(sortie);
-        System.out.println("----"+(System.currentTimeMillis() - start));
-        return sortie;
+        return Arrays.stream(binaryString).reduce("", (a, b)-> a+b);
     }
 
     @Override
-    public ArrayList<String> binaryStringToList76(String binaryString) {
+    public List<String> binaryStringToList76(String binaryString) {
         ArrayList<String> list76 = new ArrayList<>();
         String tmp = "";
         for(int i=0; i<binaryString.length(); i++){
@@ -68,72 +59,107 @@ public class Compression implements CompressionAction {
             }
         }
         if(!tmp.equals("")){
-            tmp = tmp+convertToBinaryString(tmp.length(), 7);
+            resteBits.add(tmp+"-"+convertToBinaryString(tmp.length(), 7)+"-"+tmp.length());
+            //tmp = tmp+""+convertToBinaryString(tmp.length(), 7);
         }else{
-            tmp = convertToBinaryString(0, 7);
+            resteBits.add("-0000000-0");
+            //tmp = convertToBinaryString(0, 7);
         }
-        resteBits.add(tmp);
-        //System.out.println("reste + taille" + resteBits.toString());
+
+        System.out.println("reste + taille" + resteBits.toString());
         return list76;
     }
 
     @Override
-    public String isolateUniques(String string76) {
-        //System.out.println("Uniques => "+string76.substring(1,7));
-        return string76.substring(1, 7);
+    public String[] isolateUniques(List<String> list76) {
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
+        String[] uniques = new String[list76.size()];
+        System.out.println("----------------------- Uniques -----------------------");
+        es.execute(() -> {
+            for(int i=0; i<list76.size(); i++){
+                uniques[i] = list76.get(i).substring(1,7);
+                System.out.println(i+" => "+uniques[i]);
+            }
+        });
+        return uniques;
     }
 
     @Override
-    public String isolateDuplicatePositions(String string76) {
-        //System.out.println("Doublons => "+result.toString());
-        return ""+string76.charAt(11)+string76.charAt(22)+string76.charAt(33)+string76.charAt(44)+string76.charAt(55)+string76.charAt(66);
+    public String[] isolateDuplicatePositions(List<String> list76) {
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
+        String[] duplicates = new String[list76.size()];
+        System.out.println("----------------------- Uniques -----------------------");
+        es.execute(() -> {
+            for(int i=0; i<list76.size(); i++){
+                duplicates[i] = ""+list76.get(i).charAt(11)+list76.get(i).charAt(22)+list76.get(i).charAt(33)+list76.get(i).charAt(44)+list76.get(i).charAt(55)+list76.get(i).charAt(66);
+                System.out.println(i+" => "+duplicates[i]);
+            }
+        });
+        return duplicates;
     }
 
     @Override
-    public String computeOccurrences(String string76){
-        ArrayList<Integer> positions = getExistPosition(string76);
+    public String[] computeOccurrences(List<String> list76){
         StringBuilder result = new StringBuilder();
-        for(int i=0; i<=9; i++){
-            Integer finalI = i;
-            if(i >= 1 && i<8){
-                //System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4)+", ");
-                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4));
-            }else{
-                //System.out.print(""+i+" ("+positions.stream().filter(p -> p.toString().contains(finalI.toString())).count()+") = "+convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3)+", ");
-                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3));
-            }
-        }
-        //System.out.println("\nOccurrence bits => "+result.toString());
-        return result.toString();
-    }
-
-    @Override
-    public int computeIF(String string76) {
-        ArrayList<Integer> positions = getPositions(string76);
-        double IF = 0;
-        //System.out.print("All positions => "+positions.toString()+"\n");
-        if(positions.size()%2==0){
-            for(int i=positions.size()-1; i>=0; i=i-2){
-                IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
-            }
-        }else{
-            for(int i=positions.size()-1; i>=0; i=i-2){
-                if(i != 0){
-                    IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
-                }else{
-                    IF = IF + getComputeValue(positions.get(i));
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
+        String[] occurrences = new String[list76.size()];
+        System.out.println("----------------------- Occurrences -----------------------");
+        es.execute(() -> {
+            for(int j=0; j<list76.size(); j++){
+                ArrayList<Integer> positions = getExistPosition(list76.get(j));
+                for(int i=0; i<=9; i++){
+                    Integer finalI = i;
+                    if(i >= 1 && i<8){
+                        result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),4));
+                    }else{
+                        result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(finalI.toString())).count(),3));
+                    }
                 }
+                occurrences[j] = result.toString();
+                System.out.println(j+" => "+occurrences[j]);
             }
-        }
-        return getIFValue(IF);
+        });
+        es.shutdown();
+        return occurrences;
     }
 
     @Override
-    public String get74(String unique, String doublon, String occurrence, int IF) {
-        StringBuilder result = new StringBuilder();
-        result.append(unique+doublon+occurrence+convertToBinaryString(IF, 25));
-        //System.out.println("74 bits: "+result.toString()+"\nLength = "+result.length());
-        return result.toString();
+    public String[] computeIF(List<String> list76) {
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
+        String[] IFs = new String[list76.size()];
+        es.execute(() -> {
+            for(int j=0; j<list76.size(); j++){
+                ArrayList<Integer> positions = getPositions(list76.get(j));
+                double IF = 0;
+                if(positions.size()%2==0){
+                    for(int i=positions.size()-1; i>=0; i=i-2){
+                        IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
+                    }
+                }else{
+                    for(int i=positions.size()-1; i>=0; i=i-2){
+                        if(i != 0){
+                            IF = IF + getComputeValue(positions.get(i))/getComputeValue(positions.get(i-1));
+                        }else{
+                            IF = IF + getComputeValue(positions.get(i));
+                        }
+                    }
+                }
+                IFs[j] = getIFValue(IF);
+            }
+        });
+        return IFs;
+    }
+
+    @Override
+    public String[] get74(String[] unique, String[] doublon, String[] occurrence, String[] IF) {
+        ExecutorService es = Executors.newFixedThreadPool(NB_CPU);
+        String[] list74 = new String[occurrence.length];
+        es.execute(() -> {
+            for(int i=0; i<occurrence.length; i++){
+                list74[i] = unique[i]+doublon[i]+occurrence[i]+IF[i];
+            }
+        });
+        return list74;
     }
 
     //conversion d'un entier en x bits
@@ -178,7 +204,7 @@ public class Compression implements CompressionAction {
         return positions;
     }
 
-    private int getIFValue(double IF) {
+    private String getIFValue(double IF) {
         int newIF;
         //System.out.println("IF => "+IF);
         String tempIF = Double.toString(IF).split("\\.")[1];
@@ -197,7 +223,7 @@ public class Compression implements CompressionAction {
             newIF = Integer.parseInt(tempIF);
         }
         //System.out.println("IF final => "+newIF);
-        return newIF;
+        return convertToBinaryString(newIF, 25);
     }
 
     //Valeur de calcul d'une position donnée

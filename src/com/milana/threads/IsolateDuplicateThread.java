@@ -1,6 +1,5 @@
 package com.milana.threads;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,9 +28,6 @@ public class IsolateDuplicateThread implements Runnable {
 
     private void setDuplicateAtPosition(String uniqueString76, int position) {
         sortie[position] = ""+uniqueString76.charAt(11)+uniqueString76.charAt(22)+uniqueString76.charAt(33)+uniqueString76.charAt(44)+uniqueString76.charAt(55)+uniqueString76.charAt(66);
-    }
-
-    public static String getDuplicateString(){
-        return Arrays.stream(sortie).reduce("", (a,b)->a+b);
+        System.out.println(position+" posi-> "+sortie[position]);
     }
 }

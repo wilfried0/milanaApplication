@@ -24,7 +24,6 @@ public class IsolateIFThread implements Runnable {
         for(int i=start; i<=end; i++){
             setIFBinaryStringAtPosition(computeIF(listBinaryString76.get(i)),i);
             count.getAndIncrement();
-            //System.out.println(i+" -> "+sortie[i]);
         }
     }
 

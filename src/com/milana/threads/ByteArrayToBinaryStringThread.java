@@ -1,5 +1,7 @@
 package com.milana.threads;
 
+import com.milana.compression.services.BinaryService;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,20 +12,29 @@ public class ByteArrayToBinaryStringThread implements Runnable {
     private static String[] sortie;
     private int start;
     private int end;
+    private BinaryService binaryService;
 
 
-    public ByteArrayToBinaryStringThread(byte[] bytes, int start, int end, String[] s) {
+    public ByteArrayToBinaryStringThread(byte[] bytes, int start, int end, String[] s, BinaryService binaryService) {
         this.bytes = bytes;
         this.start = start;
         this.end = end;
         sortie = s;
+        this.binaryService = binaryService;
     }
 
     @Override
     public synchronized void run() {
-        for(int i=start; i<=end; i++){
-            setBinaryStringAtPosition(byteToBinaryString(this.bytes[i]), i);
-            count.getAndIncrement();
+        while (!Thread.currentThread().isInterrupted()){
+            for(int i=start; i<=end; i++){
+                setBinaryStringAtPosition(byteToBinaryString(this.bytes[i]), i);
+                try {
+                    binaryService.put(getBinaryString());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
     }
 
