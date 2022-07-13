@@ -1,40 +1,26 @@
 package com.milana.threads;
 
-import com.milana.compression.services.BinaryService;
-
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ByteArrayToBinaryStringThread implements Runnable {
 
-    public static AtomicInteger count = new AtomicInteger(0);
     private byte[] bytes;
     private static String[] sortie;
     private int start;
     private int end;
-    private BinaryService binaryService;
 
 
-    public ByteArrayToBinaryStringThread(byte[] bytes, int start, int end, String[] s, BinaryService binaryService) {
+    public ByteArrayToBinaryStringThread(byte[] bytes, int start, int end, String[] s) {
         this.bytes = bytes;
         this.start = start;
         this.end = end;
         sortie = s;
-        this.binaryService = binaryService;
     }
 
     @Override
     public synchronized void run() {
-        while (!Thread.currentThread().isInterrupted()){
-            for(int i=start; i<=end; i++){
-                setBinaryStringAtPosition(byteToBinaryString(this.bytes[i]), i);
-                try {
-                    binaryService.put(getBinaryString());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
+        for(int i=start; i<=end; i++){
+            setBinaryStringAtPosition(byteToBinaryString(this.bytes[i]), i);
         }
     }
 
@@ -52,7 +38,6 @@ public class ByteArrayToBinaryStringThread implements Runnable {
 
     private void setBinaryStringAtPosition(String binaryString, int position){
         sortie[position] = binaryString;
-        //System.out.println("("+position+") "+" =>"+binaryString);
     }
 
     public static String getBinaryString(){

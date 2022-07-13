@@ -1,7 +1,6 @@
 package com.milana;
 
 import com.milana.compression.services.Compression;
-import com.milana.compression.services.BinaryService;
 import com.milana.threads.*;
 
 import java.nio.file.StandardOpenOption;
@@ -24,28 +23,27 @@ public class MilanaApplication {
         Thread[] IFThreads = new Thread[NB_CPU];
         Thread[] list74Threads = new Thread[NB_CPU];
         String[] binaryString = new String[bytes.length];
-        BinaryService binaryService = new BinaryService();
+
         int niveauCompression = 1;
-        //long time = System.currentTimeMillis();
         int GAP = bytes.length/NB_CPU;
         int start = 0, end = GAP+(bytes.length%NB_CPU)-1;
 
         // Conversion du tableau de bytes en bits (sous forme de chaine de carractères ex: 00110100)
         for(int i=0; i<NB_CPU; i++){
-            ByteArrayToBinaryStringThread bTbst = new ByteArrayToBinaryStringThread(bytes, start, end, binaryString, binaryService);
+            ByteArrayToBinaryStringThread bTbst = new ByteArrayToBinaryStringThread(bytes, start, end, binaryString);
             binaryThreads[i] = new Thread(bTbst);
             start = end + 1;
             end += GAP;
         }
         multiThreadProcess(binaryThreads);
-        //multiThreadProcessJoin(binaryThreads);
+        multiThreadProcessJoin(binaryThreads);
 
         String text = ByteArrayToBinaryStringThread.getBinaryString();
         System.out.println("Text initial => "+text+"-"+text.length());
 
         while(niveauCompression < Compression.seuil && text.length() > 74){
             List<String> list76 = compression.binaryStringToList76(text);
-            System.out.println("Text => "+list76.toString());
+            System.out.println("Text découpé => "+list76.toString());
             GAP = list76.size()/NB_CPU;
             if(list76.size() < NB_CPU){
                 GAP = 1;
@@ -56,6 +54,16 @@ public class MilanaApplication {
             String[] occurrences = new String[list76.size()];
             String[] IFs = new String[list76.size()];
             String[] list74 = new String[list76.size()];
+
+            start = 0; end = GAP+(list76.size()%NB_CPU)-1;
+            System.out.println("-------------------  Occurrences  --------------------------");
+            for(int i=0; i<NB_CPU; i++){
+                IsolateOccurrenceThread iOt = new IsolateOccurrenceThread(list76, start, end, occurrences);
+                occurrenceThreads[i] = new Thread(iOt);
+                start = end + 1;
+                end += GAP;
+            }
+            multiThreadProcess(occurrenceThreads);
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  Uniques  --------------------------");
@@ -78,16 +86,6 @@ public class MilanaApplication {
             multiThreadProcess(duplicateThreads);
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
-            System.out.println("-------------------  Occurrences  --------------------------");
-            for(int i=0; i<NB_CPU; i++){
-                IsolateOccurrenceThread iOt = new IsolateOccurrenceThread(list76, start, end, occurrences);
-                occurrenceThreads[i] = new Thread(iOt);
-                start = end + 1;
-                end += GAP;
-            }
-            multiThreadProcess(occurrenceThreads);
-
-            start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  IF  --------------------------");
             for(int i=0; i<NB_CPU; i++){
                 IsolateIFThread iFt = new IsolateIFThread(list76, start, end, IFs);
@@ -96,7 +94,11 @@ public class MilanaApplication {
                 end += GAP;
             }
             multiThreadProcess(IFThreads);
+
             multiThreadProcessJoin(occurrenceThreads);
+            multiThreadProcessJoin(duplicateThreads);
+            multiThreadProcessJoin(uniqueThreads);
+            multiThreadProcessJoin(IFThreads);
 
             start = 0; end = GAP+(list76.size()%NB_CPU)-1;
             System.out.println("-------------------  list74  --------------------------");
@@ -107,6 +109,7 @@ public class MilanaApplication {
                 end += GAP;
             }
             multiThreadProcess(list74Threads);
+            multiThreadProcessJoin(list74Threads);
 
             niveauCompression++;
             text = Arrays.stream(list74).collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
@@ -124,10 +127,12 @@ public class MilanaApplication {
     }
 
     public static void multiThreadProcessJoin(Thread[] threads)  {
-        try {
-            threads[NB_CPU-1].join();
-        } catch (InterruptedException ignored){
-
+        for(int i=0; i<NB_CPU; i++){
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
     }

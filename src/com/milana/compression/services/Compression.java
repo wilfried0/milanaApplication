@@ -15,10 +15,7 @@ public class Compression implements CompressionAction {
 
     private static int ref = 33554431;
     public static int seuil = 30;
-    public static int MAX_VALUE = Integer.MAX_VALUE/4;
-
     public static ArrayList<String> resteBits = new ArrayList<>();
-
     private static final int NB_CPU = Runtime.getRuntime().availableProcessors();
 
     @Override
@@ -49,23 +46,20 @@ public class Compression implements CompressionAction {
     @Override
     public List<String> binaryStringToList76(String binaryString) {
         ArrayList<String> list76 = new ArrayList<>();
-        String tmp = "";
+        StringBuilder tmp = new StringBuilder();
         for(int i=0; i<binaryString.length(); i++){
             if(tmp.length() < 76){
-                tmp = tmp+binaryString.charAt(i);
+                tmp.append(binaryString.charAt(i));
             }else{
-                list76.add(tmp);
-                tmp = ""+binaryString.charAt(i);
+                list76.add(tmp.toString());
+                tmp = new StringBuilder("" + binaryString.charAt(i));
             }
         }
-        if(!tmp.equals("")){
-            resteBits.add(tmp+"-"+convertToBinaryString(tmp.length(), 7)+"-"+tmp.length());
-            //tmp = tmp+""+convertToBinaryString(tmp.length(), 7);
+        if(!tmp.toString().equals("")){
+            resteBits.add(tmp+convertToBinaryString(tmp.length(), 7));
         }else{
-            resteBits.add("-0000000-0");
-            //tmp = convertToBinaryString(0, 7);
+            resteBits.add("0000000");
         }
-
         System.out.println("reste + taille" + resteBits.toString());
         return list76;
     }

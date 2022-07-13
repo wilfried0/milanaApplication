@@ -1,10 +1,8 @@
 package com.milana.threads;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class IsolateDuplicateThread implements Runnable {
-    public static AtomicInteger count = new AtomicInteger(0);
     private List<String> listBinaryString76;
     private static String[] sortie;
     private int start;
@@ -21,13 +19,10 @@ public class IsolateDuplicateThread implements Runnable {
     public synchronized void run() {
         for(int i=start; i<=end; i++){
             setDuplicateAtPosition(this.listBinaryString76.get(i), i);
-            count.getAndIncrement();
-            //System.out.println(i+" -> "+sortie[i]);
         }
     }
 
     private void setDuplicateAtPosition(String uniqueString76, int position) {
         sortie[position] = ""+uniqueString76.charAt(11)+uniqueString76.charAt(22)+uniqueString76.charAt(33)+uniqueString76.charAt(44)+uniqueString76.charAt(55)+uniqueString76.charAt(66);
-        System.out.println(position+" posi-> "+sortie[position]);
     }
 }
