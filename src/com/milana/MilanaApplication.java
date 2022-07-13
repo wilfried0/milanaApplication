@@ -3,6 +3,9 @@ package com.milana;
 import com.milana.compression.services.Compression;
 import com.milana.threads.*;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
@@ -14,8 +17,25 @@ public class MilanaApplication {
     static String path = "/Users/sprintpay/Documents/";//"C:\\Users\\ASSAM\\Documents\\";
     static String filePath = "test.txt";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
     public static void main(String[] args) {
+        StringBuilder text = new StringBuilder();
+        InputStream in = null;
+        try {
+            in = new FileInputStream(path+filePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for(int i=0; i<new File(path+filePath).length(); i++){
+            byte[] bytes = {};
+            bytes = readByteBlock(in, 0, 1024);
+            text.append(milanisation(bytes));
+        }
+        String finalText = text+Compression.resteBits.stream().reduce("", (a,b)->a+b);
+        String savePath = path+filePath.split(".")[0]+".lana";
+        binaryStringToFile(finalText, savePath, StandardOpenOption.APPEND);
+    }
+
+    private static String milanisation(byte[] bytes){
         Compression compression = new Compression();
-        byte[] bytes = compression.fileToByteArray(path+filePath);
         Thread[] binaryThreads = new Thread[NB_CPU];
         Thread[] uniqueThreads = new Thread[NB_CPU];
         Thread[] duplicateThreads = new Thread[NB_CPU];
@@ -115,9 +135,7 @@ public class MilanaApplication {
             text = Arrays.stream(list74).collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
             System.out.println("new text: "+text+"-"+text.length());
         }
-        String finalText = text+Compression.resteBits.stream().reduce("", (a,b)->a+b);
-        String savePath = path+"test.lana";
-        compression.binaryStringToFile(finalText, savePath, StandardOpenOption.APPEND);
+        return text;
     }
 
     private static void multiThreadProcess(Thread[] threads){
@@ -136,6 +154,26 @@ public class MilanaApplication {
         }
 
     }
+
+    private static byte[] readByteBlock(InputStream in, int start, int size){
+        byte[] result = new byte[size];
+        try {
+            in.read(result, start, size);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    private static void binaryStringToFile(String binaryString, String path, StandardOpenOption option) {
+        byte[] bytes = binaryString.getBytes();
+        try {
+            Files.write(Paths.get(path), bytes, option);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /*public static void milanisation(String filePath){
 
         Compression compression = new Compression();
