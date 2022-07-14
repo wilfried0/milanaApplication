@@ -13,10 +13,12 @@ import java.util.List;
 public class MilanaApplication {
     private static int NB_CPU = Runtime.getRuntime().availableProcessors();
     public static final int seuil = 30;
+    public static final int offset = 5*1024*1024;
 
-    static String path = "/Users/sprintpay/Documents/";//"C:\\Users\\ASSAM\\Documents\\";
-    static String filePath = "test.txt";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
+    static String path = "C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//"/Users/sprintpay/Documents/";//
+    static String filePath = "Equalizer.avi";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
     public static void main(String[] args) {
+        long fileLen = new File(path+filePath).length();
         StringBuilder text = new StringBuilder();
         InputStream in = null;
         try {
@@ -24,13 +26,23 @@ public class MilanaApplication {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        for(int i=0; i<new File(path+filePath).length(); i++){
+
+        if(fileLen < offset){
             byte[] bytes = {};
-            bytes = readByteBlock(in, 0, 1024);
+            bytes = readByteBlock(in, 0, (int) fileLen-1);
             text.append(milanisation(bytes));
+        }else{
+            for(long i=0; i<fileLen; i++){
+                byte[] bytes = {};
+                if((fileLen - i) < offset){
+                    bytes = readByteBlock(in, (int) i, (int) ((int) fileLen-i));
+                }else
+                bytes = readByteBlock(in, 0, 5*1024*1024);
+                text.append(milanisation(bytes));
+            }
         }
         String finalText = text+Compression.resteBits.stream().reduce("", (a,b)->a+b);
-        String savePath = path+filePath.split(".")[0]+".lana";
+        String savePath = path+filePath.split("\\.")[0]+".lana";
         binaryStringToFile(finalText, savePath, StandardOpenOption.APPEND);
     }
 
@@ -61,7 +73,7 @@ public class MilanaApplication {
         String text = ByteArrayToBinaryStringThread.getBinaryString();
         System.out.println("Text initial => "+text+"-"+text.length());
 
-        while(niveauCompression < Compression.seuil && text.length() > 74){
+        while(niveauCompression < seuil && text.length() > 74){
             List<String> list76 = compression.binaryStringToList76(text);
             System.out.println("Text découpé => "+list76.toString());
             GAP = list76.size()/NB_CPU;
@@ -152,7 +164,6 @@ public class MilanaApplication {
                 Thread.currentThread().interrupt();
             }
         }
-
     }
 
     private static byte[] readByteBlock(InputStream in, int start, int size){
