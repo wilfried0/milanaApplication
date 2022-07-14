@@ -1,4 +1,4 @@
-package com.milana.threads;
+package com.milana.compression.services;
 
 import java.util.Arrays;
 
