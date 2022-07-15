@@ -13,7 +13,7 @@ import java.util.List;
 public class MilanaApplication {
     private static int NB_CPU = Runtime.getRuntime().availableProcessors();
     private static final int seuil = 30;
-    private static final int offset = 10000;//65536;
+    private static final int offset = 100000;//65536;
     private static ArrayList<String> resteBits = new ArrayList<>();
 
     static String path ="/Users/sprintpay/Downloads/";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//
