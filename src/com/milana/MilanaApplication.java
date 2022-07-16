@@ -1,8 +1,15 @@
 package com.milana;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+
 import com.milana.compression.services.*;
+import com.milana.decompression.services.Decompression;
+import com.milana.decompression.services.MappedBiggerFileReaderChar;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -15,30 +22,50 @@ public class MilanaApplication {
     private static final int seuil = 30;
     private static final int offset = 100000;//65536;
     private static ArrayList<String> resteBits = new ArrayList<>();
+    private static int nbDescente = 0;
+    private static int size = 0;
 
-    static String path ="/Users/sprintpay/Downloads/";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//
-    static String filePath = "mystere.mp4";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
+    static String path ="C:\\Users\\ASSAM\\Documents\\";//"/Users/sprintpay/Downloads/";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//
+    static String filePath = "test.txt.lana";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
     public static void main(String[] args) throws IOException {
-        long startTime = System.currentTimeMillis();
+        Decompression decompression = new Decompression();
+        decompression.readNbreDescenteAndBlock(path+filePath);
+        MappedBiggerFileReaderChar reader = new MappedBiggerFileReaderChar(path+filePath, offset, Decompression.length+1);
+        int j=0;
+        String text="";
+        while(reader.read() != -1){
+            for(int i=0; i<reader.getArray().length; i++){
+                text = text + Integer.toBinaryString((reader.getArray()[i] & 0xFF) + 256).substring(1);
+            }
+            if(j == 0){
+                text = text.substring(Decompression.nbZero);
+            }
+            j++;
+        }
+
+
+
+        /*long startTime = System.currentTimeMillis();
         StringBuilder text = new StringBuilder();
         MappedBiggerFileReader reader = new MappedBiggerFileReader(path+filePath, offset);
         int i = 0;
         while(reader.read() != -1){
             i++;
-            System.out.println("Traitement bloc "+i+" de "+offset+" octets sur "+reader.getFileLength()+" blocs");
+            System.out.println("Traitement bloc "+i+" de "+offset+" octets sur "+reader.getFileLength()/offset+" blocs");
             text.append(milanisation(reader.getArray()));
         }
         reader.close();
-        String finalText = text+resteBits.stream().reduce("", (a,b)->a+b);
+        String finalText = nbDescente+"."+size+"."+text+resteBits.stream().reduce("", (a,b)->a+b);
         String savePath = path+filePath+".lana";
         File f = new File(savePath);
+        System.out.println(finalText);
         if(f.exists() && !f.isDirectory()) {
-            binaryStringToFile(finalText, savePath, StandardOpenOption.APPEND);
+            binaryStringToFile(finalText, savePath, APPEND);
         }else{
             binaryStringToFile(finalText, savePath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("Temps mis " + (endTime - startTime)*1000 + " secondes");
+        System.out.println("Temps mis " + (endTime - startTime)/1000 + " secondes");*/
     }
 
     private static String milanisation(byte[] bytes){
@@ -133,7 +160,10 @@ public class MilanaApplication {
             text = Arrays.stream(list74).collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
             System.out.println("Descente N° "+niveauCompression);
             niveauCompression++;
+            nbDescente++;
         }
+        size = text.length();
+        System.out.println("Size "+size);
         return text;
     }
 
@@ -156,9 +186,23 @@ public class MilanaApplication {
     }
 
     private static void binaryStringToFile(String binaryString, String path, StandardOpenOption... option) {
-        byte[] bytes = binaryString.getBytes();
+        byte[] bytes;
+        StringBuilder tp = new StringBuilder();
+        if(binaryString.substring(5).length()%8 == 0){
+            bytes = new BigInteger(binaryString.substring(5), 2).toByteArray();
+            System.out.println("=> "+binaryString.substring(5));
+        }else{
+            int r = binaryString.substring(5).length()%8;
+            for(int i=0; i<8-r; i++){
+                tp.append('1');
+            }
+            bytes = new BigInteger(tp.toString()+binaryString.substring(5), 2).toByteArray();
+            System.out.println("=> "+tp.toString()+binaryString.substring(5));
+        }
         try {
-            Files.write(Paths.get(path), bytes, option);
+            String tmp = "0"+binaryString.substring(0,5)+tp.length()+".";
+            Files.write(Paths.get(path), tmp.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.write(Paths.get(path), bytes, APPEND);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -173,6 +217,33 @@ public class MilanaApplication {
         return result.toString();
     }
 
+    private static String completeWithZero(String str){
+        StringBuilder strBuilder = new StringBuilder(str);
+        for(int i = 0; i<76; i++){
+            strBuilder.append('0');
+        }
+        str = strBuilder.toString();
+        return str;
+    }
+
+    private static String completeTo76Bits(String str){
+        int add = 76 - str.length();
+        if(str.charAt(str.length()-1) == '1'){
+            StringBuilder strBuilder = new StringBuilder(str);
+            for(int i = 0; i<add; i++){
+                strBuilder.append('0');
+            }
+            str = strBuilder.toString();
+        }else{
+            StringBuilder strBuilder = new StringBuilder(str);
+            for(int i = 0; i<add; i++){
+                strBuilder.append(1);
+            }
+            str = strBuilder.toString();
+        }
+        return str;
+    }
+
     private static List<String> binaryStringToList76(String binaryString) {
         ArrayList<String> list76 = new ArrayList<>();
         StringBuilder tmp = new StringBuilder();
@@ -185,9 +256,9 @@ public class MilanaApplication {
             }
         }
         if(!tmp.toString().equals("")){
-            resteBits.add(tmp+convertToBinaryString(tmp.length(), 7));
+            resteBits.add(completeTo76Bits(tmp.toString()));
         }else{
-            resteBits.add("0000000");
+            resteBits.add(completeWithZero(tmp.toString()));
         }
         return list76;
     }

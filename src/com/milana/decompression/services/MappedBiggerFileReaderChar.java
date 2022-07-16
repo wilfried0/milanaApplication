@@ -1,14 +1,11 @@
-package com.milana.compression.services;
+package com.milana.decompression.services;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-/**
- * Created by Wilfried Assam Engozo'o on 14-07-2022.
- */
-public class MappedBiggerFileReader {
+public class MappedBiggerFileReaderChar {
     private MappedByteBuffer[] mappedBufArray;
     private int count = 0;
     private int number;
@@ -17,25 +14,7 @@ public class MappedBiggerFileReader {
     private int arraySize;
     private byte[] array;
 
-    public MappedBiggerFileReader(String fileName, int arraySize) throws IOException {
-        this.fileIn = new FileInputStream(fileName);
-        FileChannel fileChannel = fileIn.getChannel();
-        this.fileLength = fileChannel.size();
-        this.number = (int) Math.ceil((double) fileLength / (double) Integer.MAX_VALUE);
-        this.mappedBufArray = new MappedByteBuffer[number];// Memory file mapping array
-        long preLength = 0;
-        long regionSize = (long) Integer.MAX_VALUE;// The size of the mapping area
-        for (int i = 0; i < number; i++) {// Maps contiguous areas of files to memory file mapping arrays
-            if (fileLength - preLength < (long) Integer.MAX_VALUE) {
-                regionSize = fileLength - preLength;// The size of the last area
-            }
-            mappedBufArray[i] = fileChannel.map(FileChannel.MapMode.READ_ONLY, preLength, regionSize);
-            preLength += regionSize;// The beginning of the next area
-        }
-        this.arraySize = arraySize;
-    }
-
-    public MappedBiggerFileReader(String fileName, int arraySize, int start) throws IOException {
+    public MappedBiggerFileReaderChar(String fileName, int arraySize, int start) throws IOException {
         this.fileIn = new FileInputStream(fileName);
         FileChannel fileChannel = fileIn.getChannel();
         this.fileLength = fileChannel.size();
