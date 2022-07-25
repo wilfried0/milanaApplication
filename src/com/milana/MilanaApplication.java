@@ -56,10 +56,6 @@ public class MilanaApplication {
             String occurrences = lastText.substring(12, 49);
             System.out.print("occurrence bits: "+occurrences+"-"+occurrences.length()+"\n");
             Integer[] occurrenceValues = decompression.getOccurrences(occurrences);
-            for(int i=0; i<occurrenceValues.length; i++){
-                System.out.print(occurrenceValues[i]+" ");
-            }
-            System.out.print("\n");
 
             String[] string76 = new String[76];
             string76[1] = uniques.charAt(0)+"";
@@ -79,9 +75,17 @@ public class MilanaApplication {
             Integer po = null;
             boolean check = true;
             while (check){
+                System.out.print("occ feore =>");
+                for(int i=0; i<occurrenceValues.length; i++){
+                    System.out.print(occurrenceValues[i]+" ");
+                }
                 decompression.getBinaryFromOccurrence(occurrenceValues, first==0?76:po, string76);
-                Arrays.asList(string76).forEach(System.out::print);
-                po = Arrays.asList(occurrenceValues).stream().filter(o -> o!=0).findAny().orElse(null);
+                System.out.print("\nocc after =>");
+                for(int i=0; i<occurrenceValues.length; i++){
+                    System.out.print(occurrenceValues[i]+" ");
+                }
+                System.out.println("");
+                po = Arrays.stream(occurrenceValues).filter(o -> o!=0).findAny().orElse(null);
                 if(po == null){
                     //Calcul de l'IF
                     String IF74 = lastText.substring(49);
@@ -92,6 +96,11 @@ public class MilanaApplication {
                     }else{
                         String occurrences2 = decompression.refillOccurrencyFromSup17(string76);
                         Integer[] occurrenceValues2 = decompression.getOccurrences(occurrences2);
+                        System.out.print("occurrenceValues2 =>");
+                        for(int i=0; i<occurrenceValues2.length; i++){
+                            System.out.print(occurrenceValues2[i]+" ");
+                        }
+                        System.out.println("");
                         for(int o=0; o<occurrenceValues2.length; o++){
                             occurrenceValues[o] = occurrenceValues2[o]+occurrenceValues[o];
                         }
@@ -99,6 +108,11 @@ public class MilanaApplication {
                 }else{
                     String occurrences2 = decompression.refillOccurrencyFromSup17(string76);
                     Integer[] occurrenceValues2 = decompression.getOccurrences(occurrences2);
+                    System.out.print("occurrenceValues2 =>");
+                    for(int i=0; i<occurrenceValues2.length; i++){
+                        System.out.print(occurrenceValues2[i]+" ");
+                    }
+                    System.out.println("");
                     for(int o=0; o<occurrenceValues2.length; o++){
                         occurrenceValues[o] = occurrenceValues2[o]+occurrenceValues[o];
                     }

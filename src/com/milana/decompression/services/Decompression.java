@@ -49,7 +49,7 @@ public class Decompression implements DecompressionAction {
 
     @Override
     public String[] getBinaryFromOccurrence(Integer[] occurrenceValues, int start, String[] string76) {
-        System.out.println("Start process "+ Arrays.stream(string76).reduce("", (a, b)->a+b));
+        System.out.println("Start vaut =>"+start);
         for(int i=start; i>=0; i--){
             if((i!=11 && i!=22 && i!=33 && i!=44 && i!=55 && i!=66 && i!=1 && i!=2 && i!=3 && i!=4 && i!=5 && i!=6)){
                 StringBuilder keepNumber = new StringBuilder();
@@ -61,14 +61,12 @@ public class Decompression implements DecompressionAction {
                                 keepNumber.append(finalI.charAt(0)); keepNumber.append(p);
                                 if(occurrenceValues[p] > 0){
                                     string76[Integer.parseInt(keepNumber.toString())] = "1";
-                                    System.out.println("apos="+keepNumber+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+" oc="+occurrenceValues[p]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                                     i = Integer.parseInt(keepNumber.toString());
                                     occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]--;
                                     occurrenceValues[p]--;
                                     p = 0;
                                 }else {
                                     string76[Integer.parseInt(keepNumber.toString())] = "0";
-                                    System.out.println("bpos="+keepNumber+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+" oc="+occurrenceValues[p]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                                     i = Integer.parseInt(keepNumber.toString());
                                 }
                             }
@@ -80,7 +78,6 @@ public class Decompression implements DecompressionAction {
                         for(int o = i; o>= ii; o--){
                             if(o!=Integer.parseInt(sb.toString())){
                                 string76[o] = "0";
-                                System.out.println("cpos="+o+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+" oc="+occurrenceValues[Integer.parseInt(String.valueOf(o).charAt(1)+"")]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                             }
                         }
                         i = ii;
@@ -93,7 +90,6 @@ public class Decompression implements DecompressionAction {
                             keepNumber.append(finalI.charAt(0)); keepNumber.append(p);
                             if(occurrenceValues[p] > 0){
                                 string76[Integer.parseInt(keepNumber.toString()) - 1] = "1";
-                                System.out.println("dpos="+keepNumber+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+" oc="+occurrenceValues[p]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                                 i = Integer.parseInt(keepNumber.toString())-1;
                                 keepNumber.setLength(0);
                                 occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]--;
@@ -101,7 +97,6 @@ public class Decompression implements DecompressionAction {
                                 p = 1;
                             }else {
                                 string76[Integer.parseInt(keepNumber.toString()) - 1] = "0";
-                                System.out.println("epos="+keepNumber+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                                 i = Integer.parseInt(keepNumber.toString()) - 1;
                                 keepNumber.setLength(0);
                             }
@@ -110,7 +105,6 @@ public class Decompression implements DecompressionAction {
                         int ii = (Integer.parseInt(finalI.charAt(0) + "")) * 10;
                         for(int o = i; o> ii; o--){
                             string76[o-1] = "0";
-                            System.out.println("fpos="+o+"; oc="+occurrenceValues[Integer.parseInt(finalI.charAt(0)+"")]+" oc="+occurrenceValues[Integer.parseInt(String.valueOf(o).charAt(1)+"")]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                         }
                         i = ii;
                     }
@@ -121,7 +115,6 @@ public class Decompression implements DecompressionAction {
                     }else{
                         string76[i] = "0";
                     }
-                    System.out.println("gpos="+i+"; oc="+occurrenceValues[i]+"; text="+Arrays.stream(string76).reduce("", (a, b)->a+b));
                 }
             }
         }
@@ -133,11 +126,16 @@ public class Decompression implements DecompressionAction {
     public String refillOccurrencyFromSup17(String[] string76) {
         String newString76 = Arrays.stream(string76).reduce("", (a,b)->a+b);
         ArrayList<Integer> positions = getExistPosition(newString76);
-        Collections.reverse(positions);
+        System.out.print("\n");
+        for(int i=0; i<positions.size(); i++){
+            System.out.print(positions.get(i)+" ");
+        }
+        System.out.print("\n");
+        //Collections.reverse(positions);
         int sup17 = positions.stream().filter(p -> (17-p)<=0).findAny().orElse(null);
         System.out.println("\nSup => "+sup17);
-        computeOccurrences(newString76.substring(0, positions.indexOf(sup17)));
-        return computeOccurrences(newString76.substring(0, positions.indexOf(sup17)));
+        //computeOccurrences(newString76.substring(0, positions.indexOf(sup17)+1));
+        return computeOccurrences(newString76.substring(0, sup17+1));
     }
 
     @Override
@@ -161,16 +159,27 @@ public class Decompression implements DecompressionAction {
     }
 
     private String computeOccurrences(String string76){
+        System.out.println("string76 => "+string76);
         ArrayList<Integer> positions = getExistPosition(string76);
+        System.out.print("positions => ");
+        for(int i=0; i<positions.size(); i++){
+            System.out.print(positions.get(i)+ " ");
+        }
         StringBuilder result = new StringBuilder();
+        System.out.print("computeOccurences => ");
         for(int i=0; i<=9; i++){
             int finalI = i;
             if(i >= 1 && i<8){
-                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count(),4));
+                String tmp = convertToBinaryString(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count(),4);
+                result.append(tmp);
+                System.out.print(tmp+" ");
             }else{
-                result.append(convertToBinaryString(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count(),3));
+                String tmp = convertToBinaryString(positions.stream().filter(p -> p.toString().contains(Integer.toString(finalI))).count(),3);
+                result.append(tmp);
+                System.out.print(tmp+" ");
             }
         }
+        System.out.println("");
         return result.toString();
     }
 
