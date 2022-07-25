@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class MilanaApplication {
@@ -25,7 +26,7 @@ public class MilanaApplication {
     private static int nbDescente = 0;
     private static int size = 0;
 
-    static String path ="C:\\Users\\ASSAM\\Documents\\";//"/Users/sprintpay/Downloads/";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//
+    static String path = "/Users/sprintpay/Documents/";//"C:\\Users\\ASSAM\\Documents\\";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\";//
     static String filePath = "test.txt.lana";// "Stade PAUL Biya au Cameroun.mp4";//+"miqo.PNG";// "C:\\Users\\ASSAM\\Documents\\test.txt";//"C:\\Users\\ASSAM\\Videos\\Films\\Movies\\The.Equalizer.2014.Et.II.2018.TRUEFRENCH.DVDRip.XviD.AC3-Tetine\\Equalizer 2014\\Equalizer.avi";//"C:\\Users\\ASSAM\\Documents\\test.txt"; //"/Users/sprintpay/Documents/test.txt";
     public static void main(String[] args) throws IOException {
         Decompression decompression = new Decompression();
@@ -43,7 +44,69 @@ public class MilanaApplication {
             j++;
         }
 
+        String[] goodText = new String[Decompression.nbDescente];
+        for(int k=0; k<Decompression.nbDescente; k++){
+            String lastText = text.substring(0,Decompression.size);
+            System.out.print("Latest: "+lastText+"-"+lastText.length()+"\n");
+            text = text.substring(Decompression.size);
+            String reste = getRestBinary(text.substring(0, 76));
+            text = text.substring(76);
+            String uniques = lastText.substring(0,6);
+            String duplicates = ""+lastText.charAt(11)+lastText.charAt(22)+lastText.charAt(33)+lastText.charAt(44)+lastText.charAt(55)+lastText.charAt(66);
+            String occurrences = lastText.substring(12, 49);
+            System.out.print("occurrence bits: "+occurrences+"-"+occurrences.length()+"\n");
+            Integer[] occurrenceValues = decompression.getOccurrences(occurrences);
+            for(int i=0; i<occurrenceValues.length; i++){
+                System.out.print(occurrenceValues[i]+" ");
+            }
+            System.out.print("\n");
 
+            String[] string76 = new String[76];
+            string76[1] = uniques.charAt(0)+"";
+            string76[2] = uniques.charAt(1)+"";
+            string76[3] = uniques.charAt(2)+"";
+            string76[4] = uniques.charAt(3)+"";
+            string76[5] = uniques.charAt(4)+"";
+            string76[6] = uniques.charAt(5)+"";
+            string76[11] = duplicates.charAt(0)+"";
+            string76[22] = duplicates.charAt(1)+"";
+            string76[33] = duplicates.charAt(2)+"";
+            string76[44] = duplicates.charAt(3)+"";
+            string76[55] = duplicates.charAt(4)+"";
+            string76[66] = duplicates.charAt(5)+"";
+
+            int first = 0;
+            Integer po = null;
+            boolean check = true;
+            while (check){
+                decompression.getBinaryFromOccurrence(occurrenceValues, first==0?76:po, string76);
+                Arrays.asList(string76).forEach(System.out::print);
+                po = Arrays.asList(occurrenceValues).stream().filter(o -> o!=0).findAny().orElse(null);
+                if(po == null){
+                    //Calcul de l'IF
+                    String IF74 = lastText.substring(49);
+                    String computeIF = first == 0? decompression.computeIF(lastText): decompression.computeIF(Arrays.stream(string76).reduce("", (a,b)->a+b));
+                    if(IF74.equals(computeIF)){
+                        goodText[k] = Arrays.stream(string76).reduce("", (a,b)->a+b);
+                        check = false;
+                    }else{
+                        String occurrences2 = decompression.refillOccurrencyFromSup17(string76);
+                        Integer[] occurrenceValues2 = decompression.getOccurrences(occurrences2);
+                        for(int o=0; o<occurrenceValues2.length; o++){
+                            occurrenceValues[o] = occurrenceValues2[o]+occurrenceValues[o];
+                        }
+                    }
+                }else{
+                    String occurrences2 = decompression.refillOccurrencyFromSup17(string76);
+                    Integer[] occurrenceValues2 = decompression.getOccurrences(occurrences2);
+                    for(int o=0; o<occurrenceValues2.length; o++){
+                        occurrenceValues[o] = occurrenceValues2[o]+occurrenceValues[o];
+                    }
+                }
+                first++;
+            }
+        }
+        System.out.println("Final text => \n"+Arrays.stream(goodText).reduce("", (a,b)->a+b));
 
         /*long startTime = System.currentTimeMillis();
         StringBuilder text = new StringBuilder();
@@ -55,6 +118,7 @@ public class MilanaApplication {
             text.append(milanisation(reader.getArray()));
         }
         reader.close();
+        Collections.reverse(resteBits);
         String finalText = nbDescente+"."+size+"."+text+resteBits.stream().reduce("", (a,b)->a+b);
         String savePath = path+filePath+".lana";
         File f = new File(savePath);
@@ -159,11 +223,11 @@ public class MilanaApplication {
 
             text = Arrays.stream(list74).collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
             System.out.println("Descente N° "+niveauCompression);
+            System.out.println("Text "+text+"\n");
             niveauCompression++;
             nbDescente++;
         }
         size = text.length();
-        System.out.println("Size "+size);
         return text;
     }
 
@@ -242,6 +306,16 @@ public class MilanaApplication {
             str = strBuilder.toString();
         }
         return str;
+    }
+
+    private static String getRestBinary(String reste){
+        int index = 0;
+        for(int i=reste.length()-2; i>=0; i--){
+            if(reste.charAt(i+1) != reste.charAt(i)){
+                index = i;
+            }
+        }
+        return reste.substring(0,index);
     }
 
     private static List<String> binaryStringToList76(String binaryString) {
